@@ -119,7 +119,7 @@ export function VisualSchemaBuilder({
                 />
               </div>
               <div className="w-[140px] flex-shrink-0">
-                <Select value={field.type} onValueChange={(val) => updateField(field.id, { type: val })}>
+                <Select value={field.type} onValueChange={(val) => updateField(field.id, { type: val || 'string' })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
