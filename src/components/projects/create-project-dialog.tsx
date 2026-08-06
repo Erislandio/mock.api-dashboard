@@ -87,10 +87,8 @@ export function CreateProjectDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button />}>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          New Project
-        </Button>
+        <Plus className="mr-2 h-4 w-4" />
+        New Project
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

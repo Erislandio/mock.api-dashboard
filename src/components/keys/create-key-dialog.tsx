@@ -59,11 +59,9 @@ export function CreateKeyDialog({ projects }: { projects: any[] }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button />}>
-        <Button disabled={projects.length === 0}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create API Key
-        </Button>
+      <DialogTrigger render={<Button disabled={projects.length === 0} />}>
+        <Plus className="mr-2 h-4 w-4" />
+        New API Key
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
