@@ -19,9 +19,32 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Button } from '@/components/ui/button'
+import { Trash, Loader2 } from 'lucide-react'
+import { deleteLog } from '@/features/logs/actions'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 export function LogsTable({ logs }: { logs: any[] }) {
   const [selectedLog, setSelectedLog] = React.useState<any | null>(null)
+  const [deletingId, setDeletingId] = React.useState<string | null>(null)
+  const router = useRouter()
+
+  const handleDelete = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    if (!confirm('Are you sure you want to delete this log?')) return
+    
+    setDeletingId(id)
+    const result = await deleteLog(id)
+    setDeletingId(null)
+    
+    if (result.error) {
+      toast.error(result.error)
+    } else {
+      toast.success('Log deleted')
+      router.refresh()
+    }
+  }
 
   return (
     <>
@@ -35,6 +58,7 @@ export function LogsTable({ logs }: { logs: any[] }) {
               <TableHead>Status</TableHead>
               <TableHead>Duration</TableHead>
               <TableHead>IP</TableHead>
+              <TableHead className="w-[50px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -64,6 +88,21 @@ export function LogsTable({ logs }: { logs: any[] }) {
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {log.ip_address}
+                  </TableCell>
+                  <TableCell>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                      onClick={(e) => handleDelete(e, log.id)}
+                      disabled={deletingId === log.id}
+                    >
+                      {deletingId === log.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash className="h-4 w-4" />
+                      )}
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
