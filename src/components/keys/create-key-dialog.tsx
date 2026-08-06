@@ -59,7 +59,7 @@ export function CreateKeyDialog({ projects }: { projects: any[] }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+      <DialogTrigger render={<Button />}>
         <Button disabled={projects.length === 0}>
           <Plus className="mr-2 h-4 w-4" />
           Create API Key

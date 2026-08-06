@@ -1,8 +1,8 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { createClient } from "@/lib/supabase/server";
-import { ChevronRight, ExternalLink } from "lucide-react";
+import { ChevronRight, ExternalLink, Play } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -80,11 +80,14 @@ export default async function ProjectPage(props: {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" asChild>
-            <Link href={`/api/mock/${project.public_token}`} target="_blank">
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Base URL
-            </Link>
+          <Button
+            variant="outline"
+            render={
+              <Link href="/playground" className="flex items-center gap-2" />
+            }
+          >
+            <ExternalLink className="h-4 w-4" />
+            Test in Playground
           </Button>
           <CreateEndpointDialog projectId={project.id} />
         </div>
@@ -157,12 +160,18 @@ export default async function ProjectPage(props: {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link
-                            href={`/projects/${project.id}/endpoints/${endpoint.id}`}
-                          >
-                            Edit
-                          </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          render={
+                            <Link
+                              href={`/playground?endpoint=${endpoint.id}`}
+                              className="flex items-center gap-2"
+                            />
+                          }
+                        >
+                          <Play className="h-4 w-4" />
+                          Test
                         </Button>
                       </TableCell>
                     </TableRow>

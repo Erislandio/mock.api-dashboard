@@ -65,20 +65,13 @@ export default async function ProjectsPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/projects/${project.id}`}>
-                          <Settings className="h-4 w-4" />
-                          <span className="sr-only">Settings</span>
-                        </Link>
+                      <Button variant="ghost" size="icon" render={<Link href={`/projects/${project.id}`} />}>
+                        <Settings className="h-4 w-4" />
+                        <span className="sr-only">Settings</span>
                       </Button>
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link
-                          href={`/api/mock/${project.public_token}`}
-                          target="_blank"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                          <span className="sr-only">Public URL</span>
-                        </Link>
+                      <Button variant="ghost" size="icon" render={<Link href={`/api/mock/${project.public_token}`} target="_blank" />}>
+                        <ExternalLink className="h-4 w-4" />
+                        <span className="sr-only">Public URL</span>
                       </Button>
                     </div>
                   </TableCell>

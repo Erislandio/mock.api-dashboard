@@ -1,7 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
-import { Activity, ArrowUpRight, FolderKanban } from "lucide-react";
+import {
+  Activity,
+  ArrowUpRight,
+  ChevronRight,
+  FolderKanban
+} from "lucide-react";
 import Link from "next/link";
 
 export default async function DashboardPage() {
@@ -29,9 +34,7 @@ export default async function DashboardPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <Button asChild>
-          <Link href="/projects">New Project</Link>
-        </Button>
+        <Button render={<Link href="/projects" />}>View Projects</Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -100,8 +103,11 @@ export default async function DashboardPage() {
                         {project.description || "No description"}
                       </p>
                     </div>
-                    <Button variant="ghost" asChild>
-                      <Link href={`/projects/${project.id}`}>View</Link>
+                    <Button
+                      variant="ghost"
+                      render={<Link href={`/projects/${project.id}`} />}
+                    >
+                      View <ChevronRight className="ml-1 h-4 w-4" />
                     </Button>
                   </div>
                 ))}
