@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import { formatDistanceToNow } from "date-fns";
 import { ExternalLink, Settings } from "lucide-react";
 import Link from "next/link";
+import { DeleteProjectButton } from "@/components/projects/delete-project-button";
 
 export default async function ProjectsPage() {
   const supabase = await createClient();
@@ -73,6 +74,7 @@ export default async function ProjectsPage() {
                         <ExternalLink className="h-4 w-4" />
                         <span className="sr-only">Public URL</span>
                       </Button>
+                      <DeleteProjectButton projectId={project.id} />
                     </div>
                   </TableCell>
                 </TableRow>

@@ -2,8 +2,10 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import { createClient } from "@/lib/supabase/server";
-import { ChevronRight, ExternalLink, Play } from "lucide-react";
+
+import { ChevronRight, ExternalLink, Play, Pencil } from "lucide-react";
 import Link from "next/link";
+import { DeleteEndpointButton } from "@/components/endpoints/delete-endpoint-button";
 import { notFound } from "next/navigation";
 
 import { CreateEndpointDialog } from "@/components/endpoints/create-endpoint-dialog";
@@ -159,7 +161,20 @@ export default async function ProjectPage(props: {
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-right flex items-center justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          render={
+                            <Link
+                              href={`/projects/${project.id}/endpoints/${endpoint.id}`}
+                              className="flex items-center gap-2"
+                            />
+                          }
+                        >
+                          <Pencil className="h-4 w-4" />
+                          Edit
+                        </Button>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -173,6 +188,7 @@ export default async function ProjectPage(props: {
                           <Play className="h-4 w-4" />
                           Test
                         </Button>
+                        <DeleteEndpointButton endpointId={endpoint.id} projectId={project.id} />
                       </TableCell>
                     </TableRow>
                   ))

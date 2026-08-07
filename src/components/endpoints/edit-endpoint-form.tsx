@@ -27,6 +27,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { updateEndpoint, deleteEndpoint } from '@/features/endpoints/actions'
 
 import { VisualSchemaBuilder } from '@/components/endpoints/visual-schema-builder'
+import { generatePayloadFromSchema } from '@/lib/schema-utils'
 
 // ... existing imports ...
 const editEndpointSchema = z.object({
@@ -83,28 +84,12 @@ export function EditEndpointForm({ endpoint, projectId }: { endpoint: any; proje
   function generateExampleFromSchema() {
     try {
       const parsedSchema = JSON.parse(schemaJson)
-      if (parsedSchema.type === 'object' && parsedSchema.properties) {
-        const dummy: any = {}
-        for (const [key, def] of Object.entries<any>(parsedSchema.properties)) {
-          if (def.type === 'string') {
-            if (def.format === 'email') dummy[key] = 'user@example.com'
-            else if (def.format === 'uuid') dummy[key] = '123e4567-e89b-12d3-a456-426614174000'
-            else if (def.format === 'date-time') dummy[key] = new Date().toISOString()
-            else dummy[key] = 'sample string'
-          } else if (def.type === 'number') {
-            dummy[key] = 42
-          } else if (def.type === 'boolean') {
-            dummy[key] = true
-          } else if (def.type === 'array') {
-            dummy[key] = []
-          } else {
-            dummy[key] = null
-          }
-        }
+      if (parsedSchema.type === 'object') {
+        const dummy = generatePayloadFromSchema(parsedSchema)
         setExampleRequestJson(JSON.stringify(dummy, null, 2))
         toast.success('Generated example from schema')
       } else {
-        toast.error('Schema is not a valid object with properties')
+        toast.error('Schema is not a valid object')
       }
     } catch (e) {
       toast.error('Invalid JSON Schema')

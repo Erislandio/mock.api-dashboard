@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
 export async function clearProjectLogs(projectId: string) {
@@ -22,8 +22,10 @@ export async function clearProjectLogs(projectId: string) {
     return { error: 'Project not found or unauthorized' }
   }
 
+  const adminSupabase = createAdminClient()
+
   // Delete all logs for the project
-  const { error } = await supabase
+  const { error } = await adminSupabase
     .from('request_logs')
     .delete()
     .eq('project_id', projectId)
@@ -38,10 +40,29 @@ export async function clearProjectLogs(projectId: string) {
 
 export async function deleteLog(logId: string) {
   const supabase = await createClient()
+  const adminSupabase = createAdminClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  const { error } = await supabase
+  // Verify ownership
+  const { data: logEntry } = await supabase
+    .from('request_logs')
+    .select('project_id')
+    .eq('id', logId)
+    .single()
+    
+  if (!logEntry) return { error: 'Log not found' }
+  
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('id', logEntry.project_id)
+    .eq('user_id', user.id)
+    .single()
+    
+  if (!project) return { error: 'Unauthorized' }
+
+  const { error } = await adminSupabase
     .from('request_logs')
     .delete()
     .eq('id', logId)
@@ -59,14 +80,29 @@ export async function clearFilteredLogs(filters: {
   search?: string;
 }) {
   const supabase = await createClient()
+  const adminSupabase = createAdminClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  let query = supabase.from('request_logs').delete()
+  const { data: userProjects } = await supabase
+    .from('projects')
+    .select('id')
+    .eq('user_id', user.id)
+
+  if (!userProjects || userProjects.length === 0) {
+    return { success: true }
+  }
+
+  const projectIds = userProjects.map(p => p.id)
+  let query = adminSupabase.from('request_logs').delete()
 
   if (filters.project && filters.project !== 'all') {
+    if (!projectIds.includes(filters.project)) return { error: 'Unauthorized' }
     query = query.eq('project_id', filters.project)
+  } else {
+    query = query.in('project_id', projectIds)
   }
+  
   if (filters.method && filters.method !== 'all') {
     query = query.eq('method', filters.method)
   }
@@ -86,15 +122,6 @@ export async function clearFilteredLogs(filters: {
   if (filters.search) {
     query = query.ilike('url', `%${filters.search}%`)
   }
-
-  // Without this, the query would delete everything.
-  // Wait, if no filters, it deletes all logs for the user.
-  // We can't rely on RLS alone if we don't have the user_id on request_logs directly.
-  // Wait! RLS for DELETE on request_logs:
-  // CREATE POLICY "Users can delete own logs" ON public.request_logs FOR DELETE USING (
-  //   EXISTS (SELECT 1 FROM public.projects WHERE id = public.request_logs.project_id AND user_id = auth.uid())
-  // );
-  // Yes! The RLS policy natively restricts deletes to ONLY the user's logs.
 
   const { error } = await query
 

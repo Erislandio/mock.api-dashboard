@@ -1,7 +1,7 @@
 "use client";
 
 import Editor from "@monaco-editor/react";
-import { Loader2, Send, Copy } from "lucide-react";
+import { Loader2, Send, Copy, Wand2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import * as React from "react";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { generatePayloadFromSchema } from "@/lib/schema-utils";
 
 export function PlaygroundClient({ projects }: { projects: any[] }) {
   const { theme } = useTheme();
@@ -30,6 +31,7 @@ export function PlaygroundClient({ projects }: { projects: any[] }) {
 
   const [method, setMethod] = React.useState("GET");
   const [path, setPath] = React.useState("/");
+  const [paramsStr, setParamsStr] = React.useState("{\n  \n}");
   const [body, setBody] = React.useState("{\n  \n}");
   const [headersStr, setHeadersStr] = React.useState(
     '{\n  "Content-Type": "application/json"\n}'
@@ -105,6 +107,17 @@ export function PlaygroundClient({ projects }: { projects: any[] }) {
       return;
     }
 
+    let parsedParams: Record<string, string> = {};
+    if (["GET", "PUT", "DELETE"].includes(method)) {
+      try {
+        if (paramsStr) parsedParams = JSON.parse(paramsStr);
+      } catch {
+        toast.error("Invalid JSON in Params");
+        setIsLoading(false);
+        return;
+      }
+    }
+
     if (authType === "bearer" && authBearer) {
       parsedHeaders["Authorization"] = `Bearer ${authBearer}`;
     } else if (authType === "basic" && (authBasicUser || authBasicPass)) {
@@ -115,7 +128,12 @@ export function PlaygroundClient({ projects }: { projects: any[] }) {
     }
 
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-    const url = `/api/mock/${selectedProject.public_token}${normalizedPath}`;
+    let url = `/api/mock/${selectedProject.public_token}${normalizedPath}`;
+
+    if (Object.keys(parsedParams).length > 0) {
+      const searchParams = new URLSearchParams(parsedParams);
+      url += `?${searchParams.toString()}`;
+    }
 
     const options: RequestInit = {
       method,
@@ -158,6 +176,15 @@ export function PlaygroundClient({ projects }: { projects: any[] }) {
       // It's ok, use empty headers or whatever is valid
     }
 
+    let parsedParams: Record<string, string> = {};
+    if (["GET", "PUT", "DELETE"].includes(method)) {
+      try {
+        if (paramsStr) parsedParams = JSON.parse(paramsStr);
+      } catch {
+        // It's ok
+      }
+    }
+
     if (authType === "bearer" && authBearer) {
       parsedHeaders["Authorization"] = `Bearer ${authBearer}`;
     } else if (authType === "basic" && (authBasicUser || authBasicPass)) {
@@ -167,7 +194,12 @@ export function PlaygroundClient({ projects }: { projects: any[] }) {
     }
 
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-    const url = `${window.location.origin}/api/mock/${selectedProject.public_token}${normalizedPath}`;
+    let url = `${window.location.origin}/api/mock/${selectedProject.public_token}${normalizedPath}`;
+
+    if (Object.keys(parsedParams).length > 0) {
+      const searchParams = new URLSearchParams(parsedParams);
+      url += `?${searchParams.toString()}`;
+    }
 
     let curlCmd = `curl -X ${method} "${url}"`;
 
@@ -283,6 +315,9 @@ export function PlaygroundClient({ projects }: { projects: any[] }) {
           <Tabs defaultValue="body" className="flex-1 flex flex-col min-h-0">
             <div className="border-b px-4 py-2 bg-muted/10">
               <TabsList className="h-8">
+                <TabsTrigger value="params" className="text-xs h-6">
+                  Params
+                </TabsTrigger>
                 <TabsTrigger value="body" className="text-xs h-6">
                   Body
                 </TabsTrigger>
@@ -294,6 +329,25 @@ export function PlaygroundClient({ projects }: { projects: any[] }) {
                 </TabsTrigger>
               </TabsList>
             </div>
+            <TabsContent value="params" className="flex-1 m-0 border-0 p-0">
+              <div className="h-full relative group">
+                {!["GET", "PUT", "DELETE"].includes(method) && (
+                  <div className="absolute inset-0 bg-background/50 z-10 flex items-center justify-center backdrop-blur-[1px]">
+                    <span className="text-sm text-muted-foreground bg-background px-4 py-2 rounded-md border shadow-sm">
+                      URL Parameters are not used with {method} requests
+                    </span>
+                  </div>
+                )}
+                <Editor
+                  height="100%"
+                  defaultLanguage="json"
+                  theme={theme === "dark" ? "vs-dark" : "light"}
+                  value={paramsStr}
+                  onChange={(val) => setParamsStr(val || "")}
+                  options={{ minimap: { enabled: false } }}
+                />
+              </div>
+            </TabsContent>
             <TabsContent value="body" className="flex-1 m-0 border-0 p-0">
               <div className="h-full relative group">
                 {!["POST", "PUT", "PATCH"].includes(method) && (
@@ -302,6 +356,23 @@ export function PlaygroundClient({ projects }: { projects: any[] }) {
                       Body is not sent with {method} requests
                     </span>
                   </div>
+                )}
+                {["POST", "PUT", "PATCH"].includes(method) && endpoints.find((e) => e.id === selectedEndpointId)?.schema && (
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="absolute top-2 right-4 z-20 opacity-80 hover:opacity-100"
+                    onClick={() => {
+                      const ep = endpoints.find((e) => e.id === selectedEndpointId);
+                      if (ep && ep.schema) {
+                        setBody(JSON.stringify(generatePayloadFromSchema(ep.schema), null, 2));
+                        toast.success("Payload generated from schema");
+                      }
+                    }}
+                  >
+                    <Wand2 className="w-3 h-3 mr-2" />
+                    Generate Payload
+                  </Button>
                 )}
                 <Editor
                   height="100%"
