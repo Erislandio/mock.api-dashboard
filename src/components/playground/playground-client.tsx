@@ -154,7 +154,7 @@ export function PlaygroundClient({ projects }: { projects: any[] }) {
       <div className="flex items-center gap-2 p-4 border-b flex-wrap">
         <Select
           value={projectId}
-          onValueChange={setProjectId}
+          onValueChange={(val) => { if (val) setProjectId(val) }}
           disabled={isLoading}
         >
           <SelectTrigger className="w-[180px]">
@@ -174,7 +174,7 @@ export function PlaygroundClient({ projects }: { projects: any[] }) {
 
         <Select
           value={selectedEndpointId}
-          onValueChange={(val) => val && handleEndpointSelect(val)}
+          onValueChange={(val) => { if (val) handleEndpointSelect(val) }}
           disabled={isLoading}
         >
           <SelectTrigger className="w-[200px]">
@@ -196,7 +196,7 @@ export function PlaygroundClient({ projects }: { projects: any[] }) {
         </Select>
 
         <div className="flex flex-1 items-center gap-0 w-full min-w-[250px]">
-          <Select value={method} onValueChange={(val) => val && setMethod(val)} disabled={isLoading}>
+          <Select value={method} onValueChange={(val) => { if (val) setMethod(val) }} disabled={isLoading}>
             <SelectTrigger className="w-[110px] rounded-r-none font-medium focus:ring-0 border-r-0 bg-muted/50">
               <SelectValue />
             </SelectTrigger>
@@ -286,7 +286,7 @@ export function PlaygroundClient({ projects }: { projects: any[] }) {
             >
               <div className="flex items-center gap-4 mb-6">
                 <Label className="w-20">Type</Label>
-                <Select value={authType} onValueChange={(val) => val && setAuthType(val)}>
+                <Select value={authType} onValueChange={(val) => { if (val) setAuthType(val) }}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue />
                   </SelectTrigger>

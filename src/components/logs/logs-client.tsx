@@ -106,7 +106,7 @@ export function LogsClient({
 
         <Select 
           value={serverParams.project || 'all'} 
-          onValueChange={(val) => handleFilterChange('project', val || '')}
+          onValueChange={(val) => handleFilterChange('project', (val as string) || '')}
         >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="All Projects" />
@@ -121,7 +121,7 @@ export function LogsClient({
 
         <Select 
           value={serverParams.method || 'all'} 
-          onValueChange={(val) => handleFilterChange('method', val || '')}
+          onValueChange={(val) => handleFilterChange('method', (val as string) || '')}
         >
           <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Method" />
@@ -136,7 +136,7 @@ export function LogsClient({
 
         <Select 
           value={serverParams.status || 'all'} 
-          onValueChange={(val) => handleFilterChange('status', val || '')}
+          onValueChange={(val) => handleFilterChange('status', (val as string) || '')}
         >
           <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Status" />
