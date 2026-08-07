@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Activity,
-  FolderKanban,
-  LayoutDashboard,
-  Play,
-  Settings
-} from "lucide-react";
+import { Activity, FolderKanban, LayoutDashboard, Play } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -16,8 +10,7 @@ const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Projects", href: "/projects", icon: FolderKanban },
   { name: "Playground", href: "/playground", icon: Play },
-  { name: "Logs", href: "/logs", icon: Activity },
-  { name: "Settings", href: "/settings", icon: Settings }
+  { name: "Logs", href: "/logs", icon: Activity }
 ];
 
 export function Sidebar() {

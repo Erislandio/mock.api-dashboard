@@ -27,8 +27,7 @@ import {
   FolderKanban,
   KeyRound,
   LayoutDashboard,
-  Play,
-  Settings
+  Play
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
@@ -37,8 +36,7 @@ const navItems = [
   { name: "Projects", href: "/projects", icon: FolderKanban },
   { name: "Playground", href: "/playground", icon: Play },
   { name: "API Keys", href: "/keys", icon: KeyRound },
-  { name: "Logs", href: "/logs", icon: Activity },
-  { name: "Settings", href: "/settings", icon: Settings }
+  { name: "Logs", href: "/logs", icon: Activity }
 ];
 
 export function Header() {
