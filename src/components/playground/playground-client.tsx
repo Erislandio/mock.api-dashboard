@@ -1,7 +1,7 @@
 "use client";
 
 import Editor from "@monaco-editor/react";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, Copy } from "lucide-react";
 import { useTheme } from "next-themes";
 import * as React from "react";
 import { toast } from "sonner";
@@ -148,6 +148,45 @@ export function PlaygroundClient({ projects }: { projects: any[] }) {
     }
   }
 
+  function handleCopyCurl() {
+    if (!selectedProject) return;
+
+    let parsedHeaders: Record<string, string> = {};
+    try {
+      if (headersStr) parsedHeaders = JSON.parse(headersStr);
+    } catch {
+      // It's ok, use empty headers or whatever is valid
+    }
+
+    if (authType === "bearer" && authBearer) {
+      parsedHeaders["Authorization"] = `Bearer ${authBearer}`;
+    } else if (authType === "basic" && (authBasicUser || authBasicPass)) {
+      parsedHeaders["Authorization"] = `Basic ${btoa(authBasicUser + ":" + authBasicPass)}`;
+    } else if (authType === "apikey" && authApiKeyName && authApiKeyValue) {
+      parsedHeaders[authApiKeyName] = authApiKeyValue;
+    }
+
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    const url = `${window.location.origin}/api/mock/${selectedProject.public_token}${normalizedPath}`;
+
+    let curlCmd = `curl -X ${method} "${url}"`;
+
+    for (const [k, v] of Object.entries(parsedHeaders)) {
+      curlCmd += ` \\\n  -H "${k}: ${v}"`;
+    }
+
+    if (["POST", "PUT", "PATCH"].includes(method) && body && body.trim() !== "") {
+      const escapedBody = body.replace(/'/g, "'\\''");
+      curlCmd += ` \\\n  -d '${escapedBody}'`;
+    }
+
+    navigator.clipboard.writeText(curlCmd).then(() => {
+      toast.success("cURL copied to clipboard!");
+    }).catch(() => {
+      toast.error("Failed to copy cURL");
+    });
+  }
+
   return (
     <div className="flex flex-col flex-1 h-full min-h-[calc(100vh-10rem)] border rounded-md bg-card">
       {/* Top Bar */}
@@ -224,6 +263,10 @@ export function PlaygroundClient({ projects }: { projects: any[] }) {
           </div>
         </div>
 
+        <Button variant="outline" onClick={handleCopyCurl} disabled={!selectedProject}>
+          <Copy className="mr-2 h-4 w-4" />
+          cURL
+        </Button>
         <Button onClick={handleSend} disabled={isLoading || !selectedProject}>
           {isLoading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
