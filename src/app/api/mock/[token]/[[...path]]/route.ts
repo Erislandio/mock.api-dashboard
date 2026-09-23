@@ -448,7 +448,26 @@ async function handleRequest(
   });
 
   const headers = matchedEndpoint.headers || {};
-  const responseData = matchedEndpoint.response || {};
+  let responseData = matchedEndpoint.response || {};
+
+  // Process dynamic parameters in response body
+  try {
+    let responseString = JSON.stringify(responseData);
+    
+    // Replace path parameters: {{params.id}}
+    for (const [key, value] of Object.entries(pathParams)) {
+      responseString = responseString.replace(new RegExp(`\\{\\{\\s*params\\.${key}\\s*\\}\\}`, 'g'), value || '');
+    }
+
+    // Replace query parameters: {{query.search}}
+    req.nextUrl.searchParams.forEach((value: string, key: string) => {
+      responseString = responseString.replace(new RegExp(`\\{\\{\\s*query\\.${key}\\s*\\}\\}`, 'g'), value || '');
+    });
+
+    responseData = JSON.parse(responseString);
+  } catch (e) {
+    console.error("Failed to parse dynamic parameters in response", e);
+  }
 
   if (method === "GET") {
     responseCache.set(cacheKey, {
